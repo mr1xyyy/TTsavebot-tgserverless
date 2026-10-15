@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="referrer" content="no-referrer">
+<title>TikTok yuklovchi</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  :root{--bg:var(--tg-theme-bg-color,#fff);--fg:var(--tg-theme-text-color,#111);--hint:var(--tg-theme-hint-color,#707579);
+    --card:var(--tg-theme-secondary-bg-color,#f1f1f4);--btn:var(--tg-theme-button-color,#2481cc);--btnfg:var(--tg-theme-button-text-color,#fff)}
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+  body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.4 Arial,Helvetica,sans-serif;padding:14px 14px 28px;padding: max(14px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) max(28px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));max-width:760px;margin-inline:auto}
+  .search{display:flex;flex-wrap:wrap;gap:8px;width:100%;min-width:0}
+  input{flex:1 1 200px;width:100%;min-width:0;min-height:48px;padding:12px;border-radius:12px;border:1px solid var(--card);background:var(--card);color:var(--fg);font:inherit;font-size:16px}
+  .search button{flex:0 0 auto;min-height:48px}
+  input:focus-visible,button:focus-visible{outline:2px solid var(--btn);outline-offset:2px}
+  @media(max-width:360px){.search button{width:100%}}
+  button{border:0;border-radius:12px;padding:12px 16px;font:inherit;font-weight:600;background:var(--btn);color:var(--btnfg);cursor:pointer}
+  button.alt{background:var(--card);color:var(--fg)}
+  button:disabled{opacity:.5}
+  #msg{color:var(--hint);margin:14px 2px;min-height:1.4em}
+  #msg.err{color:#d33}
+  .meta{margin:12px 2px 8px;overflow-wrap:anywhere}.meta b{display:block}.meta span{color:var(--hint);font-size:14px}
+  .stage{position:relative;background:#000;border-radius:16px;overflow:hidden;width:fit-content;max-width:100%;margin-inline:auto;touch-action:pan-y}
+  .stage img,.stage video{width:auto;height:auto;max-width:100%;max-height:70vh;max-height:70svh;object-fit:contain;display:block}
+  .play{position:absolute;inset:0;margin:auto;width:76px;height:76px;border-radius:50%;padding:0;font-size:30px;background:rgba(0,0,0,.55);color:#fff}
+  .nav{position:absolute;top:50%;translate:0 -50%;width:42px;height:42px;padding:0;border-radius:50%;background:rgba(0,0,0,.5);color:#fff;font-size:20px}
+  .nav.l{left:8px}.nav.r{right:8px}
+  .count{position:absolute;right:10px;top:10px;background:rgba(0,0,0,.55);color:#fff;border-radius:10px;padding:2px 9px;font-size:13px}
+  .dots{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin:10px 0}
+  .dots i{flex:0 0 7px;width:7px;height:7px;border-radius:50%;background:var(--card)}.dots i.on{background:var(--btn)}
+  .actions{display:grid;gap:8px;margin-top:12px}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  [hidden]{display:none!important}
+  html{min-height:100%;background:var(--card)}
+  body{max-width:720px;min-height:100vh;min-height:100svh;background:var(--bg);line-height:1.5}
+  .intro{padding:20px 4px 24px}
+  .eyebrow{display:flex;align-items:center;gap:8px;color:var(--hint);font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase}
+  .brand-mark{display:grid;place-items:center;width:30px;height:30px;background:var(--fg);color:var(--bg);border-radius:10px;font-size:20px;letter-spacing:0}
+  h1{font-size:clamp(26px,6vw,36px);line-height:1.15;letter-spacing:-1px;margin:18px 0 10px}
+  .intro p{color:var(--hint);margin:0;max-width:440px;font-size:15px}
+  .search-card{background:var(--card);background:color-mix(in srgb,var(--bg) 90%,var(--fg) 10%);border:1px solid rgba(128,128,128,.2);padding:18px;border-radius:22px}
+  .search-card label{display:block;font-size:13px;font-weight:650;margin-bottom:10px}
+  input{appearance:none;-webkit-appearance:none;background:var(--bg);border:1px solid rgba(128,128,128,.45);border-radius:14px;padding:14px;flex-basis:220px}
+  input::placeholder{color:var(--hint);opacity:1}
+  button{min-height:48px;border-radius:14px;transition:opacity .15s,transform .15s;overflow-wrap:anywhere}
+  button:active:not(:disabled){transform:scale(.98)}
+  button:disabled{cursor:wait}
+  .search button{flex-grow:1}
+  .field-hint{font-size:12px;color:var(--hint);margin:10px 0 0;overflow-wrap:anywhere}
+  #msg{margin:12px 4px;font-size:14px;overflow-wrap:anywhere}
+  #msg:empty{display:none}
+  #msg.err{padding:12px;border:1px solid currentColor;border-radius:12px}
+  #msg.busy{display:flex;align-items:center;gap:10px}
+  #msg.busy::before{content:'';width:14px;height:14px;flex:none;border:2px solid var(--hint);border-right-color:transparent;border-radius:50%;animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .empty{padding:36px 16px;text-align:center;color:var(--hint)}
+  .empty-icon{display:grid;place-items:center;margin:0 auto 14px;width:56px;height:56px;border-radius:18px;background:var(--card);border:1px solid rgba(128,128,128,.2);color:var(--fg);font-size:26px}
+  .empty strong{display:block;color:var(--fg);font-size:16px;margin-bottom:6px}
+  .empty p{font-size:14px;max-width:300px;margin:0 auto}
+  #result{margin-top:22px}
+  .result-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+  .result-heading h2{margin:0;font-size:18px;letter-spacing:-.3px}
+  .badge{padding:5px 10px;background:var(--card);color:var(--hint);border-radius:30px;font-size:12px;white-space:nowrap}
+  .meta{margin:0 0 16px}.meta b{font-size:15px}.meta span{display:block;margin-top:4px}
+  .stage{border-radius:20px}
+  .nav{width:44px;height:44px;min-height:44px;backdrop-filter:blur(8px)}
+  .dots{margin:14px 0}.dots i{background:var(--hint);opacity:.3}.dots i.on{opacity:1;background:var(--btn)}
+  .actions{margin-top:18px;gap:10px}.actions button{min-height:54px;padding:14px 18px}
+  .send-hint{text-align:center;font-size:12px;color:var(--hint);margin:12px 8px 0}
+  @media(max-width:599px){
+    .intro{padding:12px 2px 20px}
+    .eyebrow{font-size:11px;letter-spacing:1px}
+    h1{font-size:26px;letter-spacing:-.6px;margin:16px 0 10px}
+    .intro p{font-size:14px;line-height:1.55}
+    .search-card{padding:14px;border-radius:18px}
+    .search{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+    .search input{width:100%;min-height:50px;padding:13px 12px}
+    .search button{width:100%;min-height:48px}
+    .field-hint{font-size:11px;line-height:1.6}
+    .empty{padding:28px 12px}
+    .empty-icon{width:48px;height:48px;margin-bottom:12px}
+    .empty p{font-size:13px;max-width:280px}
+  }
+  @media(min-width:600px){body{padding:28px 32px 40px}.intro{padding-top:24px}.search button{flex-grow:0;min-width:120px}}
+  @media(prefers-reduced-motion:reduce){button{transition:none}#msg.busy::before{animation:none}}
+</style>
+</head>
+<body>
+<header class="intro">
+  <div class="eyebrow"><span class="brand-mark" aria-hidden="true">♪</span> TikTok yuklovchi</div>
+  <h1>Yoqdimi? Saqlab oling.</h1>
+  <p>Video, rasm yoki musiqa — TikTok havolasini kiriting va bot orqali oling.</p>
+</header>
+<main>
+<section class="search-card" aria-label="TikTok qidirish">
+<label for="url">TikTok havolasi</label>
+<form class="search" id="search" novalidate>
+  <input id="url" type="url" inputmode="url" enterkeyhint="search" aria-label="TikTok havolasi" placeholder="TikTok havolasini qo‘ying" autocomplete="off" autocapitalize="off" spellcheck="false">
+  <button id="go" type="submit">Qidirish</button>
+</form>
+<p class="field-hint">TikTok → Ulashish → Havolani nusxalash</p>
+</section>
+<div id="msg" role="status" aria-live="polite"></div>
+<div class="empty" id="empty">
+  <div class="empty-icon" aria-hidden="true">↙</div>
+  <strong>Havoladan boshlaymiz</strong>
+  <p>Havolani yuqoriga qo‘ying. Topilgan video yoki rasmlar shu yerda ko‘rinadi.</p>
+</div>
+
+<section id="result" hidden>
+  <div class="result-heading"><h2>Saqlashga tayyor</h2><span class="badge" id="media-type"></span></div>
+  <div class="meta"><b id="author"></b><span id="title"></span></div>
+  <div class="stage" id="stage"></div>
+  <div class="dots" id="dots" hidden></div>
+  <div class="actions" id="actions"></div>
+  <p class="send-hint">Yuborilgach, ilova yopiladi va chatga qaytasiz.</p>
+</section>
+</main>
+
+<script>
+const tg = Telegram.WebApp; tg.ready(); tg.expand();
+const $ = (id) => document.getElementById(id);
+let data = null, idx = 0;
+
+const call = (name, input) => new Promise((res, rej) =>
+  tg.Serverless.call(name, input, (err, out) => err ? rej(err) : res(out)));
+const msg = (t, err, busy = false) => { $('msg').textContent = t || ''; $('msg').className = err ? 'err' : busy ? 'busy' : ''; };
+
+async function search() {
+  if ($('go').disabled) return;
+  const url = $('url').value.trim();
+  if (!url) { msg('Avval TikTok havolasini kiriting.', true); $('url').focus(); return; }
+  $('go').disabled = true; $('go').textContent = 'Qidirilmoqda…'; $('search').setAttribute('aria-busy', 'true'); $('result').hidden = true; $('empty').hidden = true; msg('Video yoki rasmlarni qidiryapmiz…', false, true);
+  try { data = await call('resolve', { url }); msg(''); render(); }
+  catch (e) { msg(e.message || 'Topilmadi. Havolani tekshirib, qayta urinib ko‘ring.', true); $('empty').hidden = false; }
+  $('go').disabled = false; $('go').textContent = 'Qidirish'; $('search').setAttribute('aria-busy', 'false');
+}
+
+function render() {
+  idx = 0;
+  $('author').textContent = data.author || 'TikTok';
+  $('title').textContent = data.title || '';
+  $('media-type').textContent = data.type === 'video' ? 'Video' : `${data.images.length} ta rasm`;
+  $('result').hidden = false;
+  data.type === 'video' ? renderVideo() : renderSlides();
+}
+
+function renderVideo() {
+  $('dots').hidden = true;
+  const st = $('stage');
+  st.ontouchstart = null; st.ontouchend = null;
+  st.innerHTML = `<img src="${data.cover}" referrerpolicy="no-referrer"><button class="play" aria-label="Ijro etish">▶</button>`;
+  st.querySelector('.play').onclick = () => {
+    st.innerHTML = `<video src="${data.video}" controls autoplay playsinline></video>`;
+  };
+  actions([['Videoni botga yuborish', 'video'], ['Audioni botga yuborish', 'audio']]);
+}
+
+function renderSlides() {
+  $('dots').hidden = false;
+  $('stage').innerHTML = `<img id="slide" referrerpolicy="no-referrer">
+    <span class="count" id="count"></span>
+    <button class="nav l" aria-label="Oldingi">‹</button><button class="nav r" aria-label="Keyingi">›</button>`;
+  const [l, r] = $('stage').querySelectorAll('.nav');
+  l.onclick = () => go(-1); r.onclick = () => go(1);
+  let x0 = null; const st = $('stage');
+  st.ontouchstart = (e) => x0 = e.touches[0].clientX;
+  st.ontouchend = (e) => { if (x0 === null) return; const d = e.changedTouches[0].clientX - x0; if (Math.abs(d) > 40) go(d < 0 ? 1 : -1); x0 = null; };
+  show();
+  actions([['Shu rasmni botga yuborish', 'image'], ['Hammasini botga yuborish', 'images'], ['Audioni botga yuborish', 'audio']]);
+}
+
+const go = (d) => { idx = (idx + d + data.images.length) % data.images.length; show(d); };
+function show(direction = 0) {
+  const slide = $('slide');
+  slide.getAnimations().forEach(animation => animation.cancel());
+  slide.onload = () => {
+    if (!direction || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    slide.animate([
+      { opacity: 0, transform: `translateX(${direction > 0 ? 24 : -24}px)` },
+      { opacity: 1, transform: 'translateX(0)' }
+    ], { duration: 240, easing: 'ease-out' });
+  };
+  slide.src = data.images[idx];
+  $('count').textContent = `${idx + 1}/${data.images.length}`;
+  $('dots').innerHTML = data.images.map((_, i) => `<i class="${i === idx ? 'on' : ''}"></i>`).join('');
+}
+
+function actions(list) {
+  const box = $('actions'); box.innerHTML = '';
+  list.forEach(([label, kind], i) => {
+    const b = document.createElement('button');
+    b.textContent = label; if (i) b.className = 'alt';
+    b.onclick = async () => {
+      const buttons = [...box.querySelectorAll('button')];
+      buttons.forEach(button => button.disabled = true);
+      $('go').disabled = true;
+      b.textContent = 'Yuborilmoqda…'; msg('Botga yuborilmoqda…', false, true);
+      try {
+        await call('send', { url: data.url, kind, index: idx });
+        msg('✅ Botga yuborildi');
+        tg.HapticFeedback?.notificationOccurred('success');
+        tg.close();
+      }
+      catch (e) { msg(e.message || 'Xatolik', true); }
+      buttons.forEach(button => button.disabled = false);
+      $('go').disabled = false;
+      b.textContent = label;
+    };
+    box.appendChild(b);
+  });
+}
+
+$('search').onsubmit = (e) => { e.preventDefault(); search(); };
+const u = new URLSearchParams(location.search).get('u');
+if (u) { $('url').value = u; search(); }
+</script>
+</body>
+</html>

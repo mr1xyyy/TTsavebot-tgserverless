@@ -1,0 +1,6 @@
+{
+  "static": {
+    "source": "public",
+    "headers": [{ "path": "/*", "set": { "Referrer-Policy": "no-referrer" } }]
+  }
+}
