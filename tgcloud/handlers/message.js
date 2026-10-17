@@ -1,3 +1,4 @@
+import { mediaCaption } from '../lib/caption.js';
 import { api, db } from 'sdk';
 import { links } from '../schema.js';
 import { APP_URL } from '../lib/config.js';
@@ -38,12 +39,12 @@ export default async function (message) {
       [first, { text: '🎵 Audio', callback_data: `a:${row.id}` }],
     ],
   };
-  const caption = [info.author && `👤 ${info.author}`, info.title].filter(Boolean).join('\n').slice(0, 900) || 'TikTok';
+  const caption = await mediaCaption(info);
 
   try {
-    await api.sendPhoto({ chat_id, photo: info.cover, caption, reply_markup });
+    await api.sendPhoto({ chat_id, photo: info.cover, caption, parse_mode: 'HTML', reply_markup });
   } catch (e) {
-    await api.sendMessage({ chat_id, text: caption, reply_markup });
+    await api.sendMessage({ chat_id, text: caption, parse_mode: 'HTML', reply_markup });
   }
   try { await api.deleteMessage({ chat_id, message_id: wait.message_id }); } catch (e) {}
 }

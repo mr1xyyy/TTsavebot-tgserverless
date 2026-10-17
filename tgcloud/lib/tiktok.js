@@ -19,6 +19,7 @@ export async function getInfo(url) {
   const d = j.data;
   const images = (d.images || []).map(abs);
   return {
+    url,
     type: images.length ? 'slides' : 'video',
     id: d.id,
     title: d.title || '',

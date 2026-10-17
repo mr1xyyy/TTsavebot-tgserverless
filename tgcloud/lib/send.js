@@ -1,7 +1,6 @@
 import { api, fetch, InputFile, BotApiError } from 'sdk';
 
-const cap = (info) =>
-  [info.author && `👤 ${info.author}`, info.title].filter(Boolean).join('\n').slice(0, 1000);
+import { mediaCaption } from './caption.js';
 
 // URL orqali yuborib bo'lmasa, baytlarni yuklab olib fayl sifatida yuboramiz
 async function download(url, name, type) {
@@ -25,30 +24,31 @@ async function withFallback(method, field, url, name, type, extra) {
   }
 }
 
-export function sendVideo(chat_id, info) {
+export async function sendVideo(chat_id, info) {
   return withFallback('sendVideo', 'video', info.video, `${info.id}.mp4`, 'video/mp4',
-    { chat_id, caption: cap(info), supports_streaming: true });
+    { chat_id, caption: await mediaCaption(info), parse_mode: 'HTML', supports_streaming: true });
 }
 
-export function sendAudio(chat_id, info) {
-  return withFallback('sendAudio', 'audio', info.audio, `${info.id}.mp3`, 'audio/mpeg',
-    { chat_id, title: info.title.slice(0, 60) || 'TikTok audio', performer: info.author });
+export async function sendAudio(chat_id, info) {
+  const audio = await download(info.audio, 'Audio.mp4', 'audio/mp4');
+  return api.sendAudio({ chat_id, audio, title: 'Audio.mp4', performer: info.author });
 }
 
 export function sendPhoto(chat_id, url, caption) {
-  return withFallback('sendPhoto', 'photo', url, 'slide.jpg', 'image/jpeg', { chat_id, caption });
+  return withFallback('sendPhoto', 'photo', url, 'slide.jpg', 'image/jpeg', { chat_id, caption, parse_mode: 'HTML' });
 }
 
 export async function sendImages(chat_id, info) {
   const imgs = info.images;
+  const finalCaption = await mediaCaption(info);
   for (let i = 0; i < imgs.length; i += 10) {
     const chunk = imgs.slice(i, i + 10);
-    const caption = i + chunk.length === imgs.length ? cap(info) : undefined;
+    const caption = i + chunk.length === imgs.length ? finalCaption : undefined;
     if (chunk.length === 1) { await sendPhoto(chat_id, chunk[0], caption); continue; }
     try {
       await api.sendMediaGroup({
         chat_id,
-        media: chunk.map((m, k) => ({ type: 'photo', media: m, ...(k === chunk.length - 1 && caption ? { caption } : {}) })),
+        media: chunk.map((m, k) => ({ type: 'photo', media: m, ...(k === chunk.length - 1 && caption ? { caption, parse_mode: 'HTML' } : {}) })),
       });
     } catch (e) {
       if (!(e instanceof BotApiError) || e.code === 403) throw e;
