@@ -1,9 +1,10 @@
+import { extractAudio } from './audio.js';
 import { api, fetch, InputFile, BotApiError } from 'sdk';
 
 import { mediaCaption } from './caption.js';
 
 // URL orqali yuborib bo'lmasa, baytlarni yuklab olib fayl sifatida yuboramiz
-async function download(url, name, type) {
+async function downloadBytes(url) {
   const res = await fetch(url);
   if (!res.ok) throw new Error('Yuklab olib bo‘lmadi: ' + res.status);
   const parts = [];
@@ -12,7 +13,11 @@ async function download(url, name, type) {
   const out = new Uint8Array(total);
   let o = 0;
   for (const c of parts) { out.set(c, o); o += c.length; }
-  return new InputFile(out, name, { type });
+  return out;
+}
+
+async function download(url, name, type) {
+  return new InputFile(await downloadBytes(url), name, { type });
 }
 
 async function withFallback(method, field, url, name, type, extra) {
@@ -30,8 +35,13 @@ export async function sendVideo(chat_id, info) {
 }
 
 export async function sendAudio(chat_id, info) {
-  const audio = await download(info.audio, 'Audio.mp4', 'audio/mp4');
-  return api.sendAudio({ chat_id, audio, title: 'Audio.mp4', performer: info.author });
+  const audio = info.type === 'video'
+    ? new InputFile(extractAudio(await downloadBytes(info.video)), 'Audio.mp4', { type: 'audio/mp4' })
+    : await download(info.audio, 'Audio.mp4', 'audio/mp4');
+  return api.sendAudio({
+    chat_id, audio, title: 'Audio.mp4', performer: info.author,
+    caption: await mediaCaption(info), parse_mode: 'HTML'
+  });
 }
 
 export function sendPhoto(chat_id, url, caption) {
