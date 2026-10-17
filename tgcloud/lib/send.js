@@ -38,21 +38,31 @@ export function sendPhoto(chat_id, url, caption) {
   return withFallback('sendPhoto', 'photo', url, 'slide.jpg', 'image/jpeg', { chat_id, caption, parse_mode: 'HTML' });
 }
 
+// Telegram native slideshow: arrows and dots are drawn by the Telegram client.
 export async function sendImages(chat_id, info) {
-  const imgs = info.images;
-  const finalCaption = await mediaCaption(info);
-  for (let i = 0; i < imgs.length; i += 10) {
-    const chunk = imgs.slice(i, i + 10);
-    const caption = i + chunk.length === imgs.length ? finalCaption : undefined;
-    if (chunk.length === 1) { await sendPhoto(chat_id, chunk[0], caption); continue; }
-    try {
-      await api.sendMediaGroup({
-        chat_id,
-        media: chunk.map((m, k) => ({ type: 'photo', media: m, ...(k === chunk.length - 1 && caption ? { caption, parse_mode: 'HTML' } : {}) })),
-      });
-    } catch (e) {
-      if (!(e instanceof BotApiError) || e.code === 403) throw e;
-      for (let k = 0; k < chunk.length; k++) await sendPhoto(chat_id, chunk[k], k === chunk.length - 1 ? caption : undefined);
+  const images = info.images;
+  if (!images?.length) throw new Error('Rasmlar topilmadi');
+  const caption = await mediaCaption(info);
+  if (images.length === 1) return sendPhoto(chat_id, images[0], caption);
+
+  const media = images.map((url, index) => ({
+    id: `slide_${index}`,
+    media: { type: 'photo', media: url }
+  }));
+  const slides = media.map(item => `<img src="tg://photo?id=${item.id}"/>`).join('');
+  const rich_message = {
+    html: `<tg-slideshow>${slides}<figcaption>${caption.replace(/\n/g, '<br/>')}</figcaption></tg-slideshow>`,
+    media
+  };
+  try {
+    return await api.sendRichMessage({ chat_id, rich_message });
+  } catch (e) {
+    // Retry only failed URL downloads, not permission, rate-limit or format errors.
+    if (!(e instanceof BotApiError) || e.code !== 400 ||
+        !/failed to get.*(?:url|content)|wrong (?:file|http url)|webpage_curl_failed|failed to fetch/i.test(e.description || e.message)) throw e;
+    for (let index = 0; index < images.length; index++) {
+      media[index].media.media = await download(images[index], `slide-${index + 1}.jpg`, 'image/jpeg');
     }
+    return await api.sendRichMessage({ chat_id, rich_message });
   }
 }

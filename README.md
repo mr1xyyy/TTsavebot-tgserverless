@@ -6,7 +6,7 @@ Telegram Serverless uchun TikTok video, rasm va audiolarini yuklovchi bot hamda 
 
 - TikTok havolasidan video, rasmlar va audioni olish.
 - Bot chatida media turini tugmalar orqali tanlash. Fayllar yuborilgach, tanlash xabari o‘chiriladi.
-- Rasmlarni 10 tagacha albomlarga bo‘lib yuborish; izoh faqat oxirgi rasmga qo‘shiladi.
+- Bir nechta rasmni Telegram Rich Message slideshow galereyasi sifatida yuborish; izoh galereya ostida chiqadi.
 - Telefon va kompyuterga mos Mini App, media nisbatini saqlovchi ko‘rinish va animatsiyali slaydlar.
 - Mini App’dan bitta rasmni, barcha rasmlarni, video yoki audioni botga yuborish. Muvaffaqiyatli yuborilgach ilova yopiladi.
 
@@ -70,7 +70,7 @@ tgcloud/handlers/callback_query.js  Bot tugmalarini qayta ishlash
 tgcloud/endpoints/resolve.js       Mini App uchun media ma’lumotlari
 tgcloud/endpoints/send.js          Mini App’dan fayl yuborish
 tgcloud/lib/tiktok.js              TikTok havolalari va TikWM so‘rovlari
-tgcloud/lib/send.js                Video, audio, rasm va albom yuborish
+tgcloud/lib/send.js                Video, audio, rasm va slideshow yuborish
 tgcloud/lib/config.js              Mini App manzili
 tgcloud/schema.js                  Havolalarni saqlovchi baza sxemasi
 tgcloud.jsonc                     public/ papkasini hosting qilish sozlamasi
@@ -85,3 +85,10 @@ tgcloud.jsonc                     public/ papkasini hosting qilish sozlamasi
 - **Media topilmadi:** havolani tekshiring va qayta urinib ko‘ring. Media olish TikWM tashqi xizmatiga bog‘liq.
 
 `public/index.html` faylini oddiy brauzerda ochish interfeysni ko‘rishga yordam beradi. Qidirish va botga yuborish amallari Telegram Mini App muhiti hamda deploy qilingan Serverless endpointlarini talab qiladi.
+
+## Telegram slideshow
+
+Bir nechta rasm bot chatiga bitta Rich Message galereyasi sifatida yuboriladi.
+Strelkalar va nuqtalarni Telegram o'zi ko'rsatadi; alohida callback tugmalari ishlatilmaydi.
+Bitta rasm oddiy surat sifatida yuboriladi. Mini App'dagi barcha rasmlarni yuborish amali ham shu galereyadan foydalanadi.
+Ko'rinishni Telegram ilovasining yangilangan versiyasida tekshiring.
